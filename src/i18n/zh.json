@@ -422,8 +422,9 @@
       "pickManually": "手动选择",
       "selectedCount": "已选择 {{count}} 项",
       "apply": "重新关联（{{count}}）",
-      "done": "已重新关联 {{fixed}} 个技能的源路径",
-      "doneWithFailures": "已修复 {{fixed}} 个；失败 {{failed}} 个"
+      "allDone": "当前的原路径已经全部修复完了（{{fixed}} 个）",
+      "someFailed": "已修复 {{fixed}} 个，{{failed}} 个失败",
+      "failedHint": "以下 {{count}} 个技能修复失败（原因见各行），可修正路径后点「重新关联」重试"
     },
     "sourcePicker": {
       "label": "来源",

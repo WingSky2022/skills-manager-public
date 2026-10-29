@@ -408,8 +408,9 @@
       "pickManually": "手動選擇",
       "selectedCount": "已選擇 {{count}} 項",
       "apply": "重新關聯（{{count}}）",
-      "done": "已重新關聯 {{fixed}} 個技能的源路徑",
-      "doneWithFailures": "已修復 {{fixed}} 個；失敗 {{failed}} 個"
+      "allDone": "當前的原路徑已經全部修復完了（{{fixed}} 個）",
+      "someFailed": "已修復 {{fixed}} 個，{{failed}} 個失敗",
+      "failedHint": "以下 {{count}} 個技能修復失敗（原因見各行），可修正路徑後點「重新關聯」重試"
     },
     "filters": {
       "all": "全部",

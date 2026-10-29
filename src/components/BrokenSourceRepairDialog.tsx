@@ -48,6 +48,9 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
   const [rows, setRows] = useState<RowState[]>([]);
   const [root, setRoot] = useState<string>("");
   const [applying, setApplying] = useState(false);
+  /** Errors from the last apply batch, keyed by skill_id. Non-empty = the
+   * dialog stays open showing only the failed rows for retry. */
+  const [lastErrors, setLastErrors] = useState<Map<string, string>>(new Map());
   const requestIdRef = useRef(0);
 
   const runScan = useCallback(async (scanRoot: string | null) => {
@@ -62,9 +65,11 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
         chosen: entry.suggestions[0] ?? null,
       }));
       setRows(next);
+      setLastErrors(new Map());
     } catch (error: unknown) {
       if (requestId === requestIdRef.current) {
         setRows([]);
+        setLastErrors(new Map());
         toast.error(getErrorMessage(error, t("common.error")));
       }
     } finally {
@@ -115,15 +120,28 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
     setApplying(true);
     try {
       const results = await relinkLocalSourcesBatch(selectedItems);
-      const fixed = results.filter((r) => r.ok).length;
-      const failed = results.length - fixed;
-      if (failed > 0) {
-        toast.warning(t("mySkills.repairDialog.doneWithFailures", { fixed, failed }));
-      } else {
-        toast.success(t("mySkills.repairDialog.done", { fixed }));
-      }
+      const failed = results.filter((r) => !r.ok);
+      const fixed = results.length - failed.length;
       if (fixed > 0) onRepaired();
-      await runScan(root || null);
+      if (failed.length === 0) {
+        // 全部修复：直接关窗，用系统 toast 短提示（用户钦定的收尾体验）。
+        toast.success(t("mySkills.repairDialog.allDone", { fixed }), {
+          duration: 3000,
+        });
+        onClose();
+        return;
+      }
+      // 有失败：留在原窗口，只留失败行（保持勾选与已选路径），行内显示原因，
+      // 用户修正路径后按「重新关联」即可重试。
+      const errMap = new Map(
+        failed.map((r) => [r.skill_id, r.error ?? "Unknown error"]),
+      );
+      setLastErrors(errMap);
+      setRows((prev) => prev.filter((row) => errMap.has(row.entry.skill_id)));
+      toast.warning(
+        t("mySkills.repairDialog.someFailed", { fixed, failed: failed.length }),
+        { duration: 3000 },
+      );
     } catch (error: unknown) {
       toast.error(getErrorMessage(error, t("common.error")));
     } finally {
@@ -178,6 +196,12 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
             </>
           )}
         </div>
+
+        {lastErrors.size > 0 && (
+          <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-[12px] leading-snug text-red-600 dark:text-red-400">
+            {t("mySkills.repairDialog.failedHint", { count: lastErrors.size })}
+          </p>
+        )}
 
         <div className="flex-1 min-h-0 overflow-y-auto border border-border-subtle rounded-lg">
           {loading ? (
@@ -245,6 +269,11 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
                       {t("mySkills.repairDialog.pickManually")}
                     </button>
                   </div>
+                  {lastErrors.get(entry.skill_id) && (
+                    <p className="mt-1 pl-6 text-[11px] leading-snug text-red-600 dark:text-red-400">
+                      {lastErrors.get(entry.skill_id)}
+                    </p>
+                  )}
                 </li>
               ))}
             </ul>

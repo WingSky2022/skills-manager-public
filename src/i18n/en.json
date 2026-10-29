@@ -422,8 +422,9 @@
       "pickManually": "Pick manually",
       "selectedCount": "{{count}} selected",
       "apply": "Re-link ({{count}})",
-      "done": "Re-linked source paths for {{fixed}} skills",
-      "doneWithFailures": "Fixed {{fixed}}; {{failed}} failed"
+      "allDone": "All source paths repaired ({{fixed}})",
+      "someFailed": "Fixed {{fixed}}; {{failed}} failed",
+      "failedHint": "{{count}} repairs failed (reason on each row) — adjust the path and press Re-link to retry"
     },
     "sourcePicker": {
       "label": "Source",
