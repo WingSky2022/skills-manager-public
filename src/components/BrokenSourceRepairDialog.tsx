@@ -79,8 +79,12 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    setRoot(localStorage.getItem(ROOT_STORAGE_KEY) ?? "");
-    runScan(null);
+    // Scan WITH the remembered root, not null — displaying it while scanning
+    // rootless left every row suggestionless and its checkbox dead until the
+    // user re-picked the root.
+    const saved = localStorage.getItem(ROOT_STORAGE_KEY) ?? "";
+    setRoot(saved);
+    runScan(saved || null);
   }, [open, runScan]);
 
   if (!open) return null;
@@ -234,8 +238,16 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
                     <input
                       type="checkbox"
                       checked={!!chosen}
-                      onChange={(e) => setChosen(entry.skill_id, e.target.checked ? (entry.suggestions[0] ?? chosen ?? "") : null)}
-                      disabled={applying}
+                      onChange={(e) =>
+                        setChosen(
+                          entry.skill_id,
+                          e.target.checked ? entry.suggestions[0] ?? null : null,
+                        )
+                      }
+                      // Nothing to check when there is no suggestion and no
+                      // manual pick yet — an empty-string chosen would render
+                      // as unchecked anyway.
+                      disabled={applying || (!chosen && entry.suggestions.length === 0)}
                       className="accent-[var(--accent)] shrink-0"
                     />
                     <span className="text-[13px] font-medium text-secondary truncate">
