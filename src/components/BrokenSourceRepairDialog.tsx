@@ -22,9 +22,9 @@ interface Props {
 const ROOT_STORAGE_KEY = "sm.brokenSourceScanRoot";
 
 /**
- * Display form for long paths (WIN-72 用户钦定方案 A：掐头留尾——有效信息
- * 在尾部）。Inside the scan root show the root-relative part; otherwise keep
- * the last two segments. The full path always stays available via `title`.
+ * Display form for long paths: lead with the informative tail. Inside the
+ * scan root show the root-relative part; otherwise keep the last two
+ * segments. The full path always stays available via `title`.
  */
 const shortenPath = (path: string, root: string): string => {
   const cleanRoot = root.replace(/\/+$/, "");
@@ -124,15 +124,16 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
       const fixed = results.length - failed.length;
       if (fixed > 0) onRepaired();
       if (failed.length === 0) {
-        // 全部修复：直接关窗，用系统 toast 短提示（用户钦定的收尾体验）。
+        // Every row repaired: close the dialog and let the toast carry the
+        // short confirmation.
         toast.success(t("mySkills.repairDialog.allDone", { fixed }), {
           duration: 3000,
         });
         onClose();
         return;
       }
-      // 有失败：留在原窗口，只留失败行（保持勾选与已选路径），行内显示原因，
-      // 用户修正路径后按「重新关联」即可重试。
+      // Some rows failed: stay on the dialog with only the failed rows and
+      // their selections, so a corrected path can be retried right away.
       const errMap = new Map(
         failed.map((r) => [r.skill_id, r.error ?? "Unknown error"]),
       );
