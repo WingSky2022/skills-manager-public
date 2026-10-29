@@ -138,7 +138,19 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
         failed.map((r) => [r.skill_id, r.error ?? "Unknown error"]),
       );
       setLastErrors(errMap);
-      setRows((prev) => prev.filter((row) => errMap.has(row.entry.skill_id)));
+      setRows((prev) =>
+        prev
+          .filter((row) => errMap.has(row.entry.skill_id))
+          // A failed row's selected path can drop out of the suggestion list
+          // (typically a manually picked directory that disappeared). Reset it
+          // to the first suggestion — otherwise the dropdown shows a directory
+          // the retry would not submit, and retrying fails on the old path.
+          .map((row) =>
+            row.chosen && !row.entry.suggestions.includes(row.chosen)
+              ? { ...row, chosen: row.entry.suggestions[0] ?? null }
+              : row,
+          ),
+      );
       toast.warning(
         t("mySkills.repairDialog.someFailed", { fixed, failed: failed.length }),
         { duration: 3000 },
