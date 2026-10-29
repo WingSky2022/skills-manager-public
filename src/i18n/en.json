@@ -412,7 +412,7 @@
     "repairDialog": {
       "title": "Repair broken source paths",
       "intro": "The original paths below no longer exist. Pick a root folder to find same-named skill directories as suggestions. Re-pointing refreshes the library copy from the new source; files only in the library are held back — approve those by re-pointing the skill individually.",
-      "pickRoot": "Pick root and find same-named dirs",
+      "pickRoot": "Pick root folder",
       "clearRoot": "Clear root",
       "scanning": "Scanning broken sources…",
       "noBroken": "No broken sources: every local/import skill's original path exists.",

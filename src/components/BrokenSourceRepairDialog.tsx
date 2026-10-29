@@ -21,6 +21,21 @@ interface Props {
 
 const ROOT_STORAGE_KEY = "sm.brokenSourceScanRoot";
 
+/**
+ * Display form for long paths (WIN-72 用户钦定方案 A：掐头留尾——有效信息
+ * 在尾部）。Inside the scan root show the root-relative part; otherwise keep
+ * the last two segments. The full path always stays available via `title`.
+ */
+const shortenPath = (path: string, root: string): string => {
+  const cleanRoot = root.replace(/\/+$/, "");
+  if (cleanRoot && path.startsWith(cleanRoot + "/")) {
+    return path.slice(cleanRoot.length + 1);
+  }
+  const parts = path.split("/").filter(Boolean);
+  if (parts.length <= 2) return path;
+  return "…/" + parts.slice(-2).join("/");
+};
+
 type RowState = {
   entry: BrokenLocalSourceEntry;
   /** Chosen replacement path; null = not selected for repair. */
@@ -150,7 +165,7 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
           {root && (
             <>
               <span className="font-mono text-[11px] text-muted truncate max-w-[280px]" title={root}>
-                {root}
+                {shortenPath(root, "")}
               </span>
               <button
                 type="button"
@@ -193,7 +208,7 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
                       className="font-mono text-[11px] text-faint truncate"
                       title={entry.old_source_ref}
                     >
-                      {entry.old_source_ref}
+                      {shortenPath(entry.old_source_ref, root)}
                     </span>
                   </div>
                   <div className="mt-1.5 flex items-center gap-2 pl-6">
@@ -206,12 +221,12 @@ export function BrokenSourceRepairDialog({ open, onClose, onRepaired }: Props) {
                       >
                         {!chosen && <option value="">{t("mySkills.repairDialog.chooseSuggestion")}</option>}
                         {entry.suggestions.map((s) => (
-                          <option key={s} value={s}>{s}</option>
+                          <option key={s} value={s}>{shortenPath(s, root)}</option>
                         ))}
                       </select>
                     ) : chosen ? (
                       <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 truncate" title={chosen}>
-                        {chosen}
+                        {shortenPath(chosen, root)}
                       </span>
                     ) : (
                       <span className="text-[11px] text-faint">
